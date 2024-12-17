@@ -151,39 +151,48 @@ def validate_inputs(args: argparse.Namespace) -> argparse.Namespace:
         raise ValueError(
             "Please provide either face_model_path or lp_model_path or both"
         )
-    if args.input_image_path is None and args.input_video_path is None:
-        raise ValueError("Please provide either input_image_path or input_video_path")
-    if args.input_image_path is not None and args.output_image_path is None:
+    if args.input_image_folder is None and args.input_video_path is None:
+        raise ValueError("Please provide either input_image_folder or input_video_path")
+    if args.input_image_folder is not None and args.output_image_folder is None:
         raise ValueError(
-            "Please provide output_image_path for the visualized image to save."
+            "Please provide output_image_folder for the visualized image to save."
         )
     if args.input_video_path is not None and args.output_video_path is None:
         raise ValueError(
             "Please provide output_video_path for the visualized video to save."
         )
-    if args.input_image_path is not None and not os.path.exists(args.input_image_path):
-        raise ValueError(f"{args.input_image_path} does not exist.")
+    if args.input_image_folder is not None and not os.path.exists(args.input_image_folder):
+        raise ValueError(f"{args.input_image_folder} does not exist.")
     if args.input_video_path is not None and not os.path.exists(args.input_video_path):
         raise ValueError(f"{args.input_video_path} does not exist.")
     if args.face_model_path is not None and not os.path.exists(args.face_model_path):
         raise ValueError(f"{args.face_model_path} does not exist.")
     if args.lp_model_path is not None and not os.path.exists(args.lp_model_path):
         raise ValueError(f"{args.lp_model_path} does not exist.")
-    if args.output_image_path is not None and not os.path.exists(
-        os.path.dirname(args.output_image_path)
+    # if args.output_image_folder is not None:
+    #     print("args.output_image_folder: ", args.output_image_folder)
+
+    # if not os.path.exists(args.output_image_folder):
+    #     print("Output folder does not exists")
+    # raise NotImplementedError
+    if (args.output_image_folder is not None) and (not os.path.exists(
+        args.output_image_folder)
     ):
-        create_output_directory(args.output_image_path)
+        print("===============================")
+        # raise NotImplementedError
+        # create_output_directory(args.output_image_folder)
+        os.makedirs(args.output_image_folder)
     if args.output_video_path is not None and not os.path.exists(
         os.path.dirname(args.output_video_path)
     ):
         create_output_directory(args.output_video_path)
 
     # check we have write permissions on output paths
-    if args.output_image_path is not None and not os.access(
-        os.path.dirname(args.output_image_path), os.W_OK
+    if args.output_image_folder is not None and not os.access(
+        args.output_image_folder, os.W_OK
     ):
         raise ValueError(
-            f"You don't have permissions to write to {args.output_image_path}. Please grant adequate permissions, or provide a different output path."
+            f"You don't have permissions to write to {args.output_image_folder}. Please grant adequate permissions, or provide a different output path."
         )
     if args.output_video_path is not None and not os.access(
         os.path.dirname(args.output_video_path), os.W_OK
@@ -343,6 +352,16 @@ def visualize(
     # return image
     return image_fg
 
+def load_image_files(
+    input_image_folder: str
+    ) -> List[str]:
+    """
+    parameter input_image_folder: absolute path to the folder where images are located on which we want to run detector
+    """
+    file_names = os.listdir(input_image_folder)
+    image_files = [f for f in file_names if f.endswith('.jpg') or f.endswith('.png') or f.endswith('.jpeg') or f.endswith('.tiff')]
+
+    return image_files
 
 def visualize_image(
     input_image_path: str,
@@ -355,18 +374,17 @@ def visualize_image(
     scale_factor_detections: float,
 ):
     """
-    parameter input_image_path: absolute path to the input image folder
+    parameter input_image_path: absolute path to the input image
     parameter face_detector: face detector model to perform face detections
     parameter lp_detector: face detector model to perform face detections
     parameter face_model_score_threshold: face model score threshold to filter out low confidence detection
     parameter lp_model_score_threshold: license plate model score threshold to filter out low confidence detection
     parameter nms_iou_threshold: NMS iou threshold
-    parameter output_image_path: absolute path where the visualized image will be saved (folder)
+    parameter output_image_path: absolute path where the visualized image will be saved
     parameter scale_factor_detections: scale detections by the given factor to allow blurring more area
 
     Perform detections on the input image and save the output image at the given path.
     """
-    
     bgr_image = read_image(input_image_path)
     image = bgr_image.copy()
 
@@ -490,19 +508,24 @@ if __name__ == "__main__":
     else:
         lp_detector = None
 
-    if args.input_image_path is not None:
-        image = visualize_image(
-            args.input_image_path,
-            face_detector,
-            lp_detector,
-            args.face_model_score_threshold,
-            args.lp_model_score_threshold,
-            args.nms_iou_threshold,
-            args.output_image_path,
-            args.scale_factor_detections,
-        )
+    if args.input_image_folder is not None:
+        image_files = load_image_files(args.input_image_folder)
+        for img_file in tqdm.tqdm(sorted(image_files)):
+            input_image_path = os.path.join(args.input_image_folder, img_file)
+            output_image_path = os.path.join(args.output_image_folder, img_file)
+            visualize_image(
+                input_image_path,
+                face_detector,
+                lp_detector,
+                args.face_model_score_threshold,
+                args.lp_model_score_threshold,
+                args.nms_iou_threshold,
+                output_image_path,
+                args.scale_factor_detections,
+            )
 
     if args.input_video_path is not None:
+        raise NotImplementedError("Video visualization is not implemented yet.")
         visualize_video(
             args.input_video_path,
             face_detector,
