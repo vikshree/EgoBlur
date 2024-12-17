@@ -62,20 +62,28 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--input_image_folder",
+        "--hammerhead_folder",
         required=False,
         type=str,
         default=None,
-        help="Absolute path for the folder where images are located on which we want to run detector",
+        help="Absolute path of hammeread run results",
     )
 
-    parser.add_argument(
-        "--output_image_folder",
-        required=False,
-        type=str,
-        default=None,
-        help="Absolute path where we want to store the visualized images",
-    )
+    # parser.add_argument(
+    #     "--input_image_folder",
+    #     required=False,
+    #     type=str,
+    #     default=None,
+    #     help="Absolute path for the folder where images are located on which we want to run detector",
+    # )
+
+    # parser.add_argument(
+    #     "--output_image_folder",
+    #     required=False,
+    #     type=str,
+    #     default=None,
+    #     help="Absolute path where we want to store the visualized images",
+    # )
 
     parser.add_argument(
         "--input_video_path",
@@ -151,18 +159,21 @@ def validate_inputs(args: argparse.Namespace) -> argparse.Namespace:
         raise ValueError(
             "Please provide either face_model_path or lp_model_path or both"
         )
-    if args.input_image_folder is None and args.input_video_path is None:
-        raise ValueError("Please provide either input_image_folder or input_video_path")
-    if args.input_image_folder is not None and args.output_image_folder is None:
-        raise ValueError(
-            "Please provide output_image_folder for the visualized image to save."
-        )
+    # if args.input_image_folder is None and args.input_video_path is None:
+    #     raise ValueError("Please provide either input_image_folder or input_video_path")
+    # if args.input_image_folder is not None and args.output_image_folder is None:
+    #     raise ValueError(
+    #         "Please provide output_image_folder for the visualized image to save."
+    #     )
+    if args.hammerhead_folder is None or not os.path.exists(args.hammerhead_folder):
+        raise ValueError("Please provide a valid hammerhead_folder")
+    
     if args.input_video_path is not None and args.output_video_path is None:
         raise ValueError(
             "Please provide output_video_path for the visualized video to save."
         )
-    if args.input_image_folder is not None and not os.path.exists(args.input_image_folder):
-        raise ValueError(f"{args.input_image_folder} does not exist.")
+    # if args.input_image_folder is not None and not os.path.exists(args.input_image_folder):
+    #     raise ValueError(f"{args.input_image_folder} does not exist.")
     if args.input_video_path is not None and not os.path.exists(args.input_video_path):
         raise ValueError(f"{args.input_video_path} does not exist.")
     if args.face_model_path is not None and not os.path.exists(args.face_model_path):
@@ -175,25 +186,24 @@ def validate_inputs(args: argparse.Namespace) -> argparse.Namespace:
     # if not os.path.exists(args.output_image_folder):
     #     print("Output folder does not exists")
     # raise NotImplementedError
-    if (args.output_image_folder is not None) and (not os.path.exists(
-        args.output_image_folder)
-    ):
-        print("===============================")
-        # raise NotImplementedError
-        # create_output_directory(args.output_image_folder)
-        os.makedirs(args.output_image_folder)
+    # if (args.output_image_folder is not None) and (not os.path.exists(
+    #     args.output_image_folder)
+    # ):
+    #     # raise NotImplementedError
+    #     # create_output_directory(args.output_image_folder)
+    #     os.makedirs(args.output_image_folder)
     if args.output_video_path is not None and not os.path.exists(
         os.path.dirname(args.output_video_path)
     ):
         create_output_directory(args.output_video_path)
 
     # check we have write permissions on output paths
-    if args.output_image_folder is not None and not os.access(
-        args.output_image_folder, os.W_OK
-    ):
-        raise ValueError(
-            f"You don't have permissions to write to {args.output_image_folder}. Please grant adequate permissions, or provide a different output path."
-        )
+    # if args.output_image_folder is not None and not os.access(
+    #     args.output_image_folder, os.W_OK
+    # ):
+    #     raise ValueError(
+    #         f"You don't have permissions to write to {args.output_image_folder}. Please grant adequate permissions, or provide a different output path."
+    #     )
     if args.output_video_path is not None and not os.access(
         os.path.dirname(args.output_video_path), os.W_OK
     ):
@@ -364,30 +374,23 @@ def load_image_files(
     return image_files
 
 def visualize_image(
-    input_image_path: str,
+    bgr_image: np.ndarray,
     face_detector: torch.jit._script.RecursiveScriptModule,
     lp_detector: torch.jit._script.RecursiveScriptModule,
     face_model_score_threshold: float,
     lp_model_score_threshold: float,
     nms_iou_threshold: float,
-    output_image_path: str,
-    scale_factor_detections: float,
-):
+)-> List[List[float]]:
     """
-    parameter input_image_path: absolute path to the input image
+    parameter bgr_image: image
     parameter face_detector: face detector model to perform face detections
     parameter lp_detector: face detector model to perform face detections
     parameter face_model_score_threshold: face model score threshold to filter out low confidence detection
     parameter lp_model_score_threshold: license plate model score threshold to filter out low confidence detection
     parameter nms_iou_threshold: NMS iou threshold
-    parameter output_image_path: absolute path where the visualized image will be saved
-    parameter scale_factor_detections: scale detections by the given factor to allow blurring more area
 
     Perform detections on the input image and save the output image at the given path.
     """
-    bgr_image = read_image(input_image_path)
-    image = bgr_image.copy()
-
     image_tensor = get_image_tensor(bgr_image)
     image_tensor_copy = image_tensor.clone()
     detections = []
@@ -412,12 +415,13 @@ def visualize_image(
                 nms_iou_threshold,
             )
         )
-    image = visualize(
-        image,
-        detections,
-        scale_factor_detections,
-    )
-    write_image(image, output_image_path)
+    # image = visualize(
+    #     image,
+    #     detections,
+    #     scale_factor_detections,
+    # )
+    # write_image(image, output_image_path)
+    return detections
 
 
 def visualize_video(
@@ -508,21 +512,87 @@ if __name__ == "__main__":
     else:
         lp_detector = None
 
-    if args.input_image_folder is not None:
-        image_files = load_image_files(args.input_image_folder)
-        for img_file in tqdm.tqdm(sorted(image_files)):
-            input_image_path = os.path.join(args.input_image_folder, img_file)
-            output_image_path = os.path.join(args.output_image_folder, img_file)
-            visualize_image(
-                input_image_path,
-                face_detector,
-                lp_detector,
-                args.face_model_score_threshold,
-                args.lp_model_score_threshold,
-                args.nms_iou_threshold,
-                output_image_path,
-                args.scale_factor_detections,
-            )
+    if args.hammerhead_folder is not None:
+        print("Bluring LP in topbots...")
+        input_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot-raw')
+        output_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot')
+
+        if not os.path.exists(output_topbot_folder):
+            os.makedirs(output_topbot_folder)
+            image_files = load_image_files(args.input_topbot_folder)
+            for img_file in tqdm.tqdm(sorted(image_files)):
+                input_image_path = os.path.join(args.input_image_folder, img_file)
+                output_image_path = os.path.join(args.output_image_folder, img_file)
+
+                bgr_image = read_image(input_image_path)
+                image = bgr_image.copy()
+
+                detections = visualize_image(
+                    bgr_image,
+                    face_detector,
+                    lp_detector,
+                    args.face_model_score_threshold,
+                    args.lp_model_score_threshold,
+                    args.nms_iou_threshold,
+                )
+                
+                image = visualize(
+                    image,
+                    detections,
+                    args.scale_factor_detections,
+                )
+                write_image(image, output_image_path)
+        print("Finished bluring LP in topbots.")
+        print("Bluring LP in left-rect and depth-colormap...")
+        input_topbot_folder_1 = os.path.join(args.hammerhead_folder, 'left-rect-raw')
+        output_topbot_folder_1 = os.path.join(args.hammerhead_folder, 'left-rect')
+
+        input_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap-raw')
+        output_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap')
+        if not os.path.exists(output_topbot_folder_1) or not os.path.exists(output_topbot_folder_2):
+            os.makedirs(output_topbot_folder_1)
+            os.makedirs(output_topbot_folder_2)
+            image_files_1 = load_image_files(input_topbot_folder_1)
+            image_files_2 = load_image_files(input_topbot_folder_2)
+            print("Number of images: ", len(image_files_1))
+
+            for img_file in tqdm.tqdm(sorted(image_files_1)):
+                # run detection on left-rect
+                input_image_path = os.path.join(input_topbot_folder_1, img_file)
+                output_image_path = os.path.join(output_topbot_folder_1, img_file)
+
+                bgr_image = read_image(input_image_path)
+                image = bgr_image.copy()
+
+                detections = visualize_image(
+                    bgr_image,
+                    face_detector,
+                    lp_detector,
+                    args.face_model_score_threshold,
+                    args.lp_model_score_threshold,
+                    args.nms_iou_threshold,
+                )
+                
+                image = visualize(
+                    image,
+                    detections,
+                    args.scale_factor_detections,
+                )
+                write_image(image, output_image_path)
+
+                # use detection on left-rect to blur depth-colored
+                input_image_path = os.path.join(input_topbot_folder_2, img_file)
+                output_image_path = os.path.join(output_topbot_folder_2, img_file)
+
+                bgr_image = read_image(input_image_path)
+                image = bgr_image.copy()
+                image = visualize(
+                    image,
+                    detections,
+                    args.scale_factor_detections,
+                )
+                write_image(image, output_image_path)
+
 
     if args.input_video_path is not None:
         raise NotImplementedError("Video visualization is not implemented yet.")
