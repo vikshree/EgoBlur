@@ -318,10 +318,13 @@ def visualize(
     parameter scale_factor_detections: scale detections by the given factor to allow blurring more area, 1.15 would mean 15% scaling
 
     Visualize the input image with the detections and save the output image at the given path
+    
+    Modification:
+    - Instad of creating ellipse around the area, we blur that region
     """
     image_fg = image.copy()
     mask_shape = (image.shape[0], image.shape[1], 1)
-    mask = np.full(mask_shape, 0, dtype=np.uint8)
+    # mask = np.full(mask_shape, 0, dtype=image_fg.dtype)
 
     for box in detections:
         if scale_factor_detections != 1.0:
@@ -332,16 +335,19 @@ def visualize(
         w = x2 - x1
         h = y2 - y1
 
-        ksize = (image.shape[0] // 2, image.shape[1] // 2)
+        # ksize = (image.shape[0] // 2, image.shape[1] // 2)
+        ksize = (w//2, h//2)
+        # print(ksize)
         image_fg[y1:y2, x1:x2] = cv2.blur(image_fg[y1:y2, x1:x2], ksize)
-        cv2.ellipse(mask, (((x1 + x2) // 2, (y1 + y2) // 2), (w, h), 0), 255, -1)
+        # cv2.ellipse(mask, (((x1 + x2) // 2, (y1 + y2) // 2), (w, h), 0), 255, -1)
 
-    inverse_mask = cv2.bitwise_not(mask)
-    image_bg = cv2.bitwise_and(image, image, mask=inverse_mask)
-    image_fg = cv2.bitwise_and(image_fg, image_fg, mask=mask)
-    image = cv2.add(image_bg, image_fg)
+    # inverse_mask = cv2.bitwise_not(mask)
+    # image_bg = cv2.bitwise_and(image, image, mask=inverse_mask)
+    # image_fg = cv2.bitwise_and(image_fg, image_fg, mask=mask)
+    # image = cv2.add(image_bg, image_fg)
 
-    return image
+    # return image
+    return image_fg
 
 
 def visualize_image(
