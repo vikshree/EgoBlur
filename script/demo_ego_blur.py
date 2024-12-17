@@ -218,7 +218,7 @@ def read_image(image_path: str) -> np.ndarray:
     parameter image_path: absolute path to an image
     Return an image in BGR format
     """
-    bgr_image = cv2.imread(image_path)
+    bgr_image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
     if len(bgr_image.shape) == 2:
         bgr_image = cv2.cvtColor(bgr_image, cv2.COLOR_GRAY2BGR)
     return bgr_image
@@ -229,7 +229,11 @@ def write_image(image: np.ndarray, image_path: str) -> None:
     parameter image: np.ndarray in BGR format
     parameter image_path: absolute path where we want to save the visualized image
     """
-    cv2.imwrite(image_path, image)
+    extension = os.path.splitext(image_path)[1]
+    if extension.lower() == ".tiff":
+        cv2.imwrite(image_path, image, [cv2.IMWRITE_TIFF_COMPRESSION, 1])
+    else:
+        cv2.imwrite(image_path, image)
 
 
 def get_image_tensor(bgr_image: np.ndarray) -> torch.Tensor:
