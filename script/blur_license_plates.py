@@ -245,8 +245,8 @@ def write_image(image: np.ndarray, image_path: str) -> None:
     extension = os.path.splitext(image_path)[1]
     if extension.lower() == ".tiff":
         cv2.imwrite(image_path, image, [cv2.IMWRITE_TIFF_COMPRESSION, 1])
-    else:
-        cv2.imwrite(image_path, image)
+    elif extension.lower() == ".png":
+        cv2.imwrite(image_path, image, [cv2.IMWRITE_PNG_COMPRESSION, 0])
 
 
 def get_image_tensor(bgr_image: np.ndarray) -> torch.Tensor:
@@ -513,16 +513,16 @@ if __name__ == "__main__":
         lp_detector = None
 
     if args.hammerhead_folder is not None:
-        print("Bluring LP in topbots...")
+        print("Bluring LP and faces in topbots...")
         input_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot-raw')
         output_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot')
 
         if not os.path.exists(output_topbot_folder):
             os.makedirs(output_topbot_folder)
-            image_files = load_image_files(args.input_topbot_folder)
+            image_files = load_image_files(input_topbot_folder)
             for img_file in tqdm.tqdm(sorted(image_files)):
-                input_image_path = os.path.join(args.input_image_folder, img_file)
-                output_image_path = os.path.join(args.output_image_folder, img_file)
+                input_image_path = os.path.join(input_topbot_folder, img_file)
+                output_image_path = os.path.join(output_topbot_folder, img_file)
 
                 bgr_image = read_image(input_image_path)
                 image = bgr_image.copy()
@@ -592,7 +592,7 @@ if __name__ == "__main__":
                     args.scale_factor_detections,
                 )
                 write_image(image, output_image_path)
-
+        print("Finished bluring LP in left-rect and depth-colormap.")
 
     if args.input_video_path is not None:
         raise NotImplementedError("Video visualization is not implemented yet.")
