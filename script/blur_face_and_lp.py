@@ -70,46 +70,6 @@ def parse_args():
         help="Absolute path of hammeread run results",
     )
 
-    # parser.add_argument(
-    #     "--input_image_folder",
-    #     required=False,
-    #     type=str,
-    #     default=None,
-    #     help="Absolute path for the folder where images are located on which we want to run detector",
-    # )
-
-    # parser.add_argument(
-    #     "--output_image_folder",
-    #     required=False,
-    #     type=str,
-    #     default=None,
-    #     help="Absolute path where we want to store the visualized images",
-    # )
-
-    parser.add_argument(
-        "--input_video_path",
-        required=False,
-        type=str,
-        default=None,
-        help="Absolute path for the given video on which we want to make detections",
-    )
-
-    parser.add_argument(
-        "--output_video_path",
-        required=False,
-        type=str,
-        default=None,
-        help="Absolute path where we want to store the visualized video",
-    )
-
-    parser.add_argument(
-        "--output_video_fps",
-        required=False,
-        type=int,
-        default=30,
-        help="FPS for the output video",
-    )
-
     return parser.parse_args()
 
 
