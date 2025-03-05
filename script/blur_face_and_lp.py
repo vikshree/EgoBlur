@@ -516,6 +516,7 @@ if __name__ == "__main__":
         print("Bluring LP and faces in topbots...")
         input_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot-raw')
         output_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot')
+        os.rename(output_topbot_folder, input_topbot_folder)
 
         if not os.path.exists(output_topbot_folder):
             os.makedirs(output_topbot_folder)
@@ -549,6 +550,9 @@ if __name__ == "__main__":
 
         input_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap-raw')
         output_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap')
+        os.rename(output_topbot_folder_1, input_topbot_folder_1)
+        os.rename(output_topbot_folder_2, input_topbot_folder_2)
+
         if not os.path.exists(output_topbot_folder_1) or not os.path.exists(output_topbot_folder_2):
             os.makedirs(output_topbot_folder_1)
             os.makedirs(output_topbot_folder_2)
