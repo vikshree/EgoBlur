@@ -10,6 +10,7 @@ import torchvision
 from moviepy.editor import ImageSequenceClip
 from moviepy.video.io.VideoFileClip import VideoFileClip
 import tqdm
+import shutil
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -516,6 +517,10 @@ if __name__ == "__main__":
         print("Bluring LP and faces in topbots...")
         input_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot-raw')
         output_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot')
+        if (os.path.exists(input_topbot_folder)):
+            # delete folder 
+            shutil.rmtree(input_topbot_folder)
+
         os.rename(output_topbot_folder, input_topbot_folder)
 
         if not os.path.exists(output_topbot_folder):
@@ -550,6 +555,14 @@ if __name__ == "__main__":
 
         input_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap-raw')
         output_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap')
+
+        if (os.path.exists(input_topbot_folder_1)):
+            # delete folder 
+            shutil.rmtree(input_topbot_folder_1)
+        if (os.path.exists(input_topbot_folder_2)):
+            # delete folder 
+            shutil.rmtree(input_topbot_folder_2)
+            
         os.rename(output_topbot_folder_1, input_topbot_folder_1)
         os.rename(output_topbot_folder_2, input_topbot_folder_2)
 
