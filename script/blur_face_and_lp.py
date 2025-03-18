@@ -108,12 +108,12 @@ def validate_inputs(args: argparse.Namespace) -> argparse.Namespace:
         raise ValueError(
             f"Invalid scale_factor_detections {args.scale_factor_detections}"
         )
-    if not 1 <= args.output_video_fps or not (
-        isinstance(args.output_video_fps, int) and args.output_video_fps % 1 == 0
-    ):
-        raise ValueError(
-            f"Invalid output_video_fps {args.output_video_fps}, should be a positive integer"
-        )
+    # if not 1 <= args.output_video_fps or not (
+    #     isinstance(args.output_video_fps, int) and args.output_video_fps % 1 == 0
+    # ):
+    #     raise ValueError(
+    #         f"Invalid output_video_fps {args.output_video_fps}, should be a positive integer"
+    #     )
 
     # input/output paths checks
     if args.face_model_path is None and args.lp_model_path is None:
@@ -129,14 +129,14 @@ def validate_inputs(args: argparse.Namespace) -> argparse.Namespace:
     if args.hammerhead_folder is None or not os.path.exists(args.hammerhead_folder):
         raise ValueError("Please provide a valid hammerhead_folder")
     
-    if args.input_video_path is not None and args.output_video_path is None:
-        raise ValueError(
-            "Please provide output_video_path for the visualized video to save."
-        )
+    # if args.input_video_path is not None and args.output_video_path is None:
+    #     raise ValueError(
+    #         "Please provide output_video_path for the visualized video to save."
+    #     )
     # if args.input_image_folder is not None and not os.path.exists(args.input_image_folder):
     #     raise ValueError(f"{args.input_image_folder} does not exist.")
-    if args.input_video_path is not None and not os.path.exists(args.input_video_path):
-        raise ValueError(f"{args.input_video_path} does not exist.")
+    # if args.input_video_path is not None and not os.path.exists(args.input_video_path):
+    #     raise ValueError(f"{args.input_video_path} does not exist.")
     if args.face_model_path is not None and not os.path.exists(args.face_model_path):
         raise ValueError(f"{args.face_model_path} does not exist.")
     if args.lp_model_path is not None and not os.path.exists(args.lp_model_path):
@@ -153,10 +153,10 @@ def validate_inputs(args: argparse.Namespace) -> argparse.Namespace:
     #     # raise NotImplementedError
     #     # create_output_directory(args.output_image_folder)
     #     os.makedirs(args.output_image_folder)
-    if args.output_video_path is not None and not os.path.exists(
-        os.path.dirname(args.output_video_path)
-    ):
-        create_output_directory(args.output_video_path)
+    # if args.output_video_path is not None and not os.path.exists(
+    #     os.path.dirname(args.output_video_path)
+    # ):
+    #     create_output_directory(args.output_video_path)
 
     # check we have write permissions on output paths
     # if args.output_image_folder is not None and not os.access(
@@ -165,12 +165,12 @@ def validate_inputs(args: argparse.Namespace) -> argparse.Namespace:
     #     raise ValueError(
     #         f"You don't have permissions to write to {args.output_image_folder}. Please grant adequate permissions, or provide a different output path."
     #     )
-    if args.output_video_path is not None and not os.access(
-        os.path.dirname(args.output_video_path), os.W_OK
-    ):
-        raise ValueError(
-            f"You don't have permissions to write to {args.output_video_path}. Please grant adequate permissions, or provide a different output path."
-        )
+    # if args.output_video_path is not None and not os.access(
+    #     os.path.dirname(args.output_video_path), os.W_OK
+    # ):
+    #     raise ValueError(
+    #         f"You don't have permissions to write to {args.output_video_path}. Please grant adequate permissions, or provide a different output path."
+    #     )
 
     return args
 
@@ -475,13 +475,8 @@ if __name__ == "__main__":
 
     if args.hammerhead_folder is not None:
         print("Bluring LP and faces in topbots...")
-        input_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot-raw')
-        output_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot')
-        if (os.path.exists(input_topbot_folder)):
-            # delete folder 
-            shutil.rmtree(input_topbot_folder)
-
-        os.rename(output_topbot_folder, input_topbot_folder)
+        input_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot')
+        output_topbot_folder = os.path.join(args.hammerhead_folder, 'topbot-process')
 
         if not os.path.exists(output_topbot_folder):
             os.makedirs(output_topbot_folder)
@@ -509,22 +504,17 @@ if __name__ == "__main__":
                 )
                 write_image(image, output_image_path)
         print("Finished bluring LP in topbots.")
+        # if (os.path.exists(input_topbot_folder)):
+        #     # delete folder 
+        #     shutil.rmtree(input_topbot_folder)
+        # os.rename(output_topbot_folder, input_topbot_folder)
+
         print("Bluring LP in left-rect and depth-colormap...")
-        input_topbot_folder_1 = os.path.join(args.hammerhead_folder, 'left-rect-raw')
-        output_topbot_folder_1 = os.path.join(args.hammerhead_folder, 'left-rect')
+        input_topbot_folder_1 = os.path.join(args.hammerhead_folder, 'left-rect')
+        output_topbot_folder_1 = os.path.join(args.hammerhead_folder, 'left-rect-process')
 
-        input_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap-raw')
-        output_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap')
-
-        if (os.path.exists(input_topbot_folder_1)):
-            # delete folder 
-            shutil.rmtree(input_topbot_folder_1)
-        if (os.path.exists(input_topbot_folder_2)):
-            # delete folder 
-            shutil.rmtree(input_topbot_folder_2)
-            
-        os.rename(output_topbot_folder_1, input_topbot_folder_1)
-        os.rename(output_topbot_folder_2, input_topbot_folder_2)
+        input_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap')
+        output_topbot_folder_2 = os.path.join(args.hammerhead_folder, 'depth-colormap-process')
 
         if not os.path.exists(output_topbot_folder_1) or not os.path.exists(output_topbot_folder_2):
             os.makedirs(output_topbot_folder_1)
@@ -570,17 +560,26 @@ if __name__ == "__main__":
                 )
                 write_image(image, output_image_path)
         print("Finished bluring LP in left-rect and depth-colormap.")
+        # if (os.path.exists(input_topbot_folder_1)):
+        #     # delete folder 
+        #     shutil.rmtree(input_topbot_folder_1)
+        # if (os.path.exists(input_topbot_folder_2)):
+        #     # delete folder 
+        #     shutil.rmtree(input_topbot_folder_2)
+            
+        # os.rename(output_topbot_folder_1, input_topbot_folder_1)
+        # os.rename(output_topbot_folder_2, input_topbot_folder_2)
 
-    if args.input_video_path is not None:
-        raise NotImplementedError("Video visualization is not implemented yet.")
-        visualize_video(
-            args.input_video_path,
-            face_detector,
-            lp_detector,
-            args.face_model_score_threshold,
-            args.lp_model_score_threshold,
-            args.nms_iou_threshold,
-            args.output_video_path,
-            args.scale_factor_detections,
-            args.output_video_fps,
-        )
+    # if args.input_video_path is not None:
+    #     raise NotImplementedError("Video visualization is not implemented yet.")
+    #     visualize_video(
+    #         args.input_video_path,
+    #         face_detector,
+    #         lp_detector,
+    #         args.face_model_score_threshold,
+    #         args.lp_model_score_threshold,
+    #         args.nms_iou_threshold,
+    #         args.output_video_path,
+    #         args.scale_factor_detections,
+    #         args.output_video_fps,
+    #     )
